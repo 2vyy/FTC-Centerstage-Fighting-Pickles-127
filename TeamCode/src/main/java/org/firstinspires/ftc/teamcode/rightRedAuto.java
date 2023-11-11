@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "Left_Red_Auto (Blocks to Java)")
-public class Left_Blue_Auto extends LinearOpMode {
+@Autonomous(name = "rightRedAuto")
+public class rightRedAuto extends LinearOpMode {
 
     private DcMotor leftFront;
     private DcMotor rightFront;
@@ -90,15 +90,15 @@ public class Left_Blue_Auto extends LinearOpMode {
         // Put initialization blocks here. NO NECESSARY CHANGES ABOVE HERE
         if (opModeIsActive()) {
             // PUT AUTONOMOUS INSTRUCTIONS HERE
-            Move_Left_Right(2);
+            Move_Left_Right(-2);
             Move_Forward_Backward(36, 1);
-            Move_Left_Right(24);
+            Move_Left_Right(-24);
             SlideMovement(8250);
             openClaw();
             sleep(1000);
             closeClaw();
             SlideMovement(0);
-            Move_Left_Right(24);
+            Move_Left_Right(-24);
             Move_Forward_Backward(12, 1);
         }
         while (opModeIsActive()) {

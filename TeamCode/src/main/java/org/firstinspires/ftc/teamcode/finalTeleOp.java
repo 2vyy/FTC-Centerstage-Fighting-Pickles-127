@@ -7,9 +7,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name="Teleop Final", group="Linear Opmode")
+@TeleOp(name="finalTeleOp", group="Linear Opmode")
 
-public class FinalTeleOp extends LinearOpMode {
+public class finalTeleOp extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -36,8 +36,8 @@ public class FinalTeleOp extends LinearOpMode {
               left.setPosition(0.5);
               right.setPosition(0.5);
             } else if (gamepad2.a) {
-              left.setPosition(0.275);
-              right.setPosition(0.275);
+              left.setPosition(0.25);
+              right.setPosition(0.25);
             }
     }
     
