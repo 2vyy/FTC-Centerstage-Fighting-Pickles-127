@@ -22,9 +22,9 @@ public class finalTeleOp extends LinearOpMode {
     private Servo left;
     
     private void slideAction() {
-        if (gamepad2.dpad_up) {
+        if (gamepad1.dpad_up) {
             slides.setPower(1);
-        } else if (gamepad2.dpad_down) {
+        } else if (gamepad1.dpad_down) {
             slides.setPower(-1);
         } else {
             slides.setPower(0);
@@ -32,10 +32,10 @@ public class finalTeleOp extends LinearOpMode {
     }
     
     private void clawAction() {
-        if (gamepad2.b) {
+        if (gamepad1.b) {
               left.setPosition(0.5);
               right.setPosition(0.5);
-            } else if (gamepad2.a) {
+            } else if (gamepad1.a) {
               left.setPosition(0.25);
               right.setPosition(0.25);
             }
