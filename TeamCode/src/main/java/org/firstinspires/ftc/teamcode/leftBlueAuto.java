@@ -94,16 +94,10 @@ public class leftBlueAuto extends LinearOpMode {
         if (opModeIsActive()) {
             // PUT AUTONOMOUS INSTRUCTIONS HERE
             closeClaw();
-            Move_Left_Right(6);
-            Move_Forward_Backward(36, 1);
-            Move_Left_Right(24);
-            SlideMovement(6500);
+            SlideMovement(300);
+            Move_Left_Right(24*2+6);
+            Move_Forward_Backward(24*2, 1);
             openClaw();
-            sleep(1000);
-            closeClaw();
-            SlideMovement(-6500);
-            Move_Left_Right(24);
-            Move_Forward_Backward(8, 1);
         }
         while (opModeIsActive()) {
             // Put loop blocks here.
