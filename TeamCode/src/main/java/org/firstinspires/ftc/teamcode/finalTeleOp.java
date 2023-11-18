@@ -22,6 +22,11 @@ public class finalTeleOp extends LinearOpMode {
     private Servo left;
     
     private void slideAction() {
+        //if claw open, close before raising/lowering
+        if(left.getPosition()==0.25 && (gamepad1.dpad_up || gamepad1.dpad_down)) {
+            left.setPosition(0.5);
+            right.setPosition(0.5);
+        }
         if (gamepad1.dpad_up) {
             slides.setPower(1);
         } else if (gamepad1.dpad_down) {
