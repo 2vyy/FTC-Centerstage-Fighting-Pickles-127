@@ -93,6 +93,7 @@ public class rightRedAuto extends LinearOpMode {
         // Put initialization blocks here. NO NECESSARY CHANGES ABOVE HERE
         if (opModeIsActive()) {
             // PUT AUTONOMOUS INSTRUCTIONS HERE
+            //
             closeClaw();
             SlideMovement(300);
             Move_Left_Right(-24*2-6);
