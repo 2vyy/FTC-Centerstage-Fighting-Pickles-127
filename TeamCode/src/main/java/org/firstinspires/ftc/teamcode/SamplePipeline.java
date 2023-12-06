@@ -59,7 +59,7 @@ public class SamplePipeline extends OpenCvPipeline {
     public void inputToCb(Mat input)
     {
         Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-        Core.extractChannel(YCrCb, channel, 2);
+        Core.extractChannel(YCrCb, channel, teamColor);// 1 is red, 2 is blue
     }
 
     @Override
@@ -76,9 +76,9 @@ public class SamplePipeline extends OpenCvPipeline {
     public Mat processFrame(Mat input) {
         inputToCb(input);
 
-        avg1 = (int) Core.mean(region1).val[teamColor];
-        avg2 = (int) Core.mean(region2).val[teamColor];
-        avg3 = (int) Core.mean(region3).val[teamColor];
+        avg1 = (int) Core.mean(region1).val[0];
+        avg2 = (int) Core.mean(region2).val[0];
+        avg3 = (int) Core.mean(region3).val[0];
 
         Imgproc.rectangle(input, region1_pointA, region1_pointB, BLUE, 2);
         Imgproc.rectangle(input, region2_pointA, region2_pointB, BLUE, 2);
