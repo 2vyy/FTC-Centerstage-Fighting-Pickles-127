@@ -21,7 +21,7 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
     OpenCvWebcam webcam;
     SamplePipeline pipeline;
     SamplePipeline.PropPosition snapshotAnalysis = SamplePipeline.PropPosition.CENTER;
-
+//
     @Override
     public void runOpMode() {
         //leftblue demo

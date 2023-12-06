@@ -61,7 +61,7 @@ public class SamplePipeline extends OpenCvPipeline {
         Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
         Core.extractChannel(YCrCb, channel, teamColor);// 1 is red, 2 is blue
     }
-
+//
     @Override
     public void init(Mat firstFrame) {
         inputToCb(firstFrame);
