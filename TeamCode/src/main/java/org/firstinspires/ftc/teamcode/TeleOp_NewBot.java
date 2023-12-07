@@ -76,7 +76,7 @@ public class TeleOp_NewBot extends LinearOpMode {
             //rightSwiper.setPosition(.25);
         }
     }
-
+//
     public void powerAction() {
         if(gamepad1.y) {
             if(leftPower==1.0) {

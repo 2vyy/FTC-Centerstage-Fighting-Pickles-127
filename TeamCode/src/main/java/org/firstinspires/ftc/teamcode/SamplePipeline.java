@@ -100,7 +100,7 @@ public class SamplePipeline extends OpenCvPipeline {
 
         return input;
     }
-
+//
     public PropPosition getAnalysis() {
         return position;
     }
