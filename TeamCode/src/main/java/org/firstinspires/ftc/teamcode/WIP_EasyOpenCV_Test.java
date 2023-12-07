@@ -45,7 +45,7 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
             @Override
             public void onOpened() {
                 // TODO: make sure resolution is highest that is supported by webcam
-                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(1280, 720, OpenCvCameraRotation.UPRIGHT);
 //                //0 for blue, 1 for red (maybe)
 //                //webcam.setTeamColor(0);
 //                snapshotAnalysis = pipeline.getAnalysis();
@@ -66,12 +66,12 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
         leftSwiper = hardwareMap.get(Servo.class, "leftSwiper");
-        rightSwiper = hardwareMap.get(Servo.class, "rightSwiper");
+//        rightSwiper = hardwareMap.get(Servo.class, "rightSwiper");
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD); //probably reverse
         leftSwiper.setDirection(Servo.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightSwiper.setDirection(Servo.Direction.REVERSE);
+        //rightSwiper.setDirection(Servo.Direction.REVERSE);
 
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -90,6 +90,11 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
 
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
+        drive(0.25,20,20);
+        drive(0.25,16,-8); //right
+        drive(0.25,-8,16);
+        //go forward a bit
+        // also change resolution boxes to fit 720p
         switch (snapshotAnalysis) {
             case LEFT: {
                 telemetry.addLine("LEFT");
@@ -99,8 +104,10 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
             }
             default: {
                 telemetry.addLine("CENTER");
+
             }
         }
+        requestOpModeStop();
 
 
 
@@ -112,15 +119,13 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
     }
 
     public void openSwipers() {
-        leftSwiper.setPosition(.5);
-        rightSwiper.setPosition(.5);
+        leftSwiper.setPosition(.7);
     }
     public void closeSwipers() {
-        leftSwiper.setPosition(0);
-        rightSwiper.setPosition(0);
+        leftSwiper.setPosition(.3);
     }
 
-    private void drive(double power, double leftInches, double rightInches) {
+    private void drive(double power, double leftInches, double rightInches) { //code stolen from ff has motors in front, could be a prob idk
         int rightTarget;
         int leftTarget;
 

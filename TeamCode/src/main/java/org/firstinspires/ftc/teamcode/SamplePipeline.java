@@ -18,11 +18,12 @@ public class SamplePipeline extends OpenCvPipeline {
     static final Scalar GREEN = new Scalar(0, 255, 0);
 
     //TODO: find exact numbers for these once cam is in place, also update resolution used if changed
-    final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(320*.25,240*.5);
-    final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(320*.5,240*.25);
-    final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(320*.75,240*.5);
+
     final int REGION_WIDTH = 20;
     final int REGION_HEIGHT = 20;
+    final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,240*.55);
+    final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(320*.5,240*.55);
+    final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(320-REGION_WIDTH,240*.55);
 
     Point region1_pointA = new Point(
             REGION1_TOPLEFT_ANCHOR_POINT.x,
