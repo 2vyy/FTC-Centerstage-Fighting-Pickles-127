@@ -17,11 +17,20 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 @Autonomous(name = "WIP_EasyOpenCV_Test")
 public class WIP_EasyOpenCV_Test extends LinearOpMode {
-    int isRed = 0;
+    private DcMotor leftDrive;
+    private DcMotor rightDrive;
+    private Servo leftSwiper;
+    private Servo rightSwiper;
     OpenCvWebcam webcam;
     SamplePipeline pipeline;
     SamplePipeline.PropPosition snapshotAnalysis = SamplePipeline.PropPosition.CENTER;
-//
+
+    static final double HD_COUNTS_PER_REV = 28;
+    static final double DRIVE_GEAR_REDUCTION = 20.15293;
+    static final double WHEEL_CIRCUMFERENCE_MM = 90 * Math.PI;
+    static final double DRIVE_COUNTS_PER_MM = (HD_COUNTS_PER_REV * DRIVE_GEAR_REDUCTION) / WHEEL_CIRCUMFERENCE_MM;
+    static final double DRIVE_COUNTS_PER_IN = DRIVE_COUNTS_PER_MM * 25.4;
+
     @Override
     public void runOpMode() {
         //leftblue demo
@@ -29,7 +38,7 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
         FtcDashboard.getInstance().startCameraStream(webcam, 30);
         pipeline = new SamplePipeline();
-        pipeline.setTeamColor(2); //1 for red, 2 for blue
+        pipeline.setTeamColor(2); // ** 1 for red, 2 for blue **
         webcam.setPipeline(pipeline);
         //webcam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -52,6 +61,23 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
             }
         });
 
+        //cam code done :3
+
+        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
+        leftSwiper = hardwareMap.get(Servo.class, "leftSwiper");
+        rightSwiper = hardwareMap.get(Servo.class, "rightSwiper");
+
+        leftDrive.setDirection(DcMotor.Direction.FORWARD); //probably reverse
+        leftSwiper.setDirection(Servo.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightSwiper.setDirection(Servo.Direction.REVERSE);
+
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+
+        //replaces waitForStart
         while (!isStarted() && !isStopRequested())
         {
             telemetry.addData("Realtime analysis", pipeline.getAnalysis());
@@ -83,5 +109,45 @@ public class WIP_EasyOpenCV_Test extends LinearOpMode {
 //            // Put loop blocks here.
 //            telemetry.update();
 //        }
+    }
+
+    public void openSwipers() {
+        leftSwiper.setPosition(.5);
+        rightSwiper.setPosition(.5);
+    }
+    public void closeSwipers() {
+        leftSwiper.setPosition(0);
+        rightSwiper.setPosition(0);
+    }
+
+    private void drive(double power, double leftInches, double rightInches) {
+        int rightTarget;
+        int leftTarget;
+
+        if (opModeIsActive()) {
+            // Create target positions
+            rightTarget = rightDrive.getCurrentPosition() + (int)(rightInches * DRIVE_COUNTS_PER_IN);
+            leftTarget = leftDrive.getCurrentPosition() + (int)(leftInches * DRIVE_COUNTS_PER_IN);
+
+            // set target position
+            leftDrive.setTargetPosition(leftTarget);
+            rightDrive.setTargetPosition(rightTarget);
+
+            //switch to run to position mode
+            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            //run to position at the desiginated power
+            leftDrive.setPower(power);
+            rightDrive.setPower(power);
+
+            // wait until both motors are no longer busy running to position //this entire part is cringe
+            while (opModeIsActive() && (leftDrive.isBusy() || rightDrive.isBusy())) {
+            }
+
+            // set motor power back to 0
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+        }
     }
 }
