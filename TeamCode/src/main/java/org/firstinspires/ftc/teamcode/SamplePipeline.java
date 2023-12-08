@@ -22,7 +22,7 @@ public class SamplePipeline extends OpenCvPipeline {
     final int REGION_WIDTH = 200;
     final int REGION_HEIGHT = 200;
     final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,720*.55);
-    final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(1280*.5,720*.55);
+    final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point((1280-REGION_WIDTH)*.5,720*.55);
     final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(1280-REGION_WIDTH,720*.55);
 
     Point region1_pointA = new Point(

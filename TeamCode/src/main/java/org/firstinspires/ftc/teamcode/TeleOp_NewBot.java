@@ -31,13 +31,13 @@ public class TeleOp_NewBot extends LinearOpMode {
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
         leftSwiper = hardwareMap.get(Servo.class, "leftSwiper");
-        //rightSwiper = hardwareMap.get(Servo.class, "rightSwiper");
+        rightSwiper = hardwareMap.get(Servo.class, "rightSwiper");
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD); //probably reverse
         leftSwiper.setDirection(Servo.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        //rightSwiper.setDirection(Servo.Direction.REVERSE);
-        //rightSwiper.setPosition(0.25);
+        rightSwiper.setDirection(Servo.Direction.REVERSE);
+        rightSwiper.setPosition(0.25);
         leftSwiper.setPosition(.4);
 
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -52,13 +52,13 @@ public class TeleOp_NewBot extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             swiperAction();
-            powerAction();
+            //powerAction();
 
             //DRIVE
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, lowerPowerBound, upperPowerBound) ;
-            rightPower   = Range.clip(drive - turn, lowerPowerBound, upperPowerBound) ;
+            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
+            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
             leftDrive.setPower(leftPower);
             rightDrive.setPower(rightPower);
@@ -71,22 +71,20 @@ public class TeleOp_NewBot extends LinearOpMode {
         if(gamepad1.a) {
             telemetry.addLine("Trying to open");
             leftSwiper.setPosition(.7);
-            //rightSwiper.setPosition(.45);
+            rightSwiper.setPosition(.45);
         } else if (gamepad1.b) {
             leftSwiper.setPosition(.3);
-            //rightSwiper.setPosition(.25);
+            rightSwiper.setPosition(.25);
         }
     }
 //
     public void powerAction() {
         if(gamepad1.y) {
-            if(upperPowerBound == 1.0) {
-                upperPowerBound = 0.5;
-                lowerPowerBound =- 0.5;
-            } else {
-                upperPowerBound = 1.0;
-                lowerPowerBound =- -1.0;
-            }
+            upperPowerBound = 0.5;
+            lowerPowerBound =- 0.5;
+        } else {
+            upperPowerBound = 1.0;
+            lowerPowerBound =- -1.0;
         }
     }
 }

@@ -136,9 +136,11 @@ public class leftBlueAuto extends LinearOpMode {
 
     public void openSwipers() {
         leftSwiper.setPosition(.7);
+        //rightSwiper.setPosition(.45);
     }
     public void closeSwipers() {
         leftSwiper.setPosition(.3);
+        //rightSwiper.setPosition(.45);
     }
 
     public void dropoff() {

@@ -93,7 +93,7 @@ public class rightRedAuto extends LinearOpMode {
         // also change resolution boxes to fit 720p
 
         closeSwipers();
-        drive(0.25,20,20);
+        drive(0.25,40,40);
         switch (snapshotAnalysis) {
             case LEFT: {
                 telemetry.addLine("LEFT");
