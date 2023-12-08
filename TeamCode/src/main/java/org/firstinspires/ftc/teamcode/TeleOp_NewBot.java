@@ -20,6 +20,9 @@ public class TeleOp_NewBot extends LinearOpMode {
 
     double leftPower;
     double rightPower;
+
+    double upperPowerBound = 1.0;
+    double lowerPowerBound = -1.0;
     
     @Override
     public void runOpMode() {
@@ -49,15 +52,13 @@ public class TeleOp_NewBot extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             swiperAction();
-            //powerAction();
-
-
+            powerAction();
 
             //DRIVE
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+            leftPower    = Range.clip(drive + turn, lowerPowerBound, upperPowerBound) ;
+            rightPower   = Range.clip(drive - turn, lowerPowerBound, upperPowerBound) ;
 
             leftDrive.setPower(leftPower);
             rightDrive.setPower(rightPower);
@@ -79,12 +80,12 @@ public class TeleOp_NewBot extends LinearOpMode {
 //
     public void powerAction() {
         if(gamepad1.y) {
-            if(leftPower==1.0) {
-                leftPower=0.5;
-                rightPower=0.5;
+            if(upperPowerBound == 1.0) {
+                upperPowerBound = 0.5;
+                lowerPowerBound =- 0.5;
             } else {
-                leftPower=1;
-                rightPower=1;
+                upperPowerBound = 1.0;
+                lowerPowerBound =- -1.0;
             }
         }
     }

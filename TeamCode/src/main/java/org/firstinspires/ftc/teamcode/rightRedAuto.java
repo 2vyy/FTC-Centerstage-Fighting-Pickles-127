@@ -1,122 +1,189 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
+
+// a lot of this is inspired/stolen from https://github.com/OpenFTC/EasyOpenCV/blob/master/examples/src/main/java/org/firstinspires/ftc/teamcode/WebcamExample.java
+// the link has much more in depth explanations on what each line does and why
 
 @Autonomous(name = "rightRedAuto")
 public class rightRedAuto extends LinearOpMode {
+    private DcMotor leftDrive;
+    private DcMotor rightDrive;
+    private Servo leftSwiper;
+    OpenCvWebcam webcam;
+    SamplePipeline pipeline;
+    SamplePipeline.PropPosition snapshotAnalysis = SamplePipeline.PropPosition.CENTER;
 
-    private DcMotor leftFront;
-    private DcMotor rightFront;
-    private DcMotor leftRear;
-    private DcMotor rightRear;
-    public DcMotor[] motors = new DcMotor[]{leftFront, leftRear, rightFront, rightRear};
-    private DcMotor slides;
-    private Servo right;
-    private Servo left;
+    static final double HD_COUNTS_PER_REV = 28;
+    static final double DRIVE_GEAR_REDUCTION = 20.15293;
+    static final double WHEEL_CIRCUMFERENCE_MM = 90 * Math.PI;
+    static final double DRIVE_COUNTS_PER_MM = (HD_COUNTS_PER_REV * DRIVE_GEAR_REDUCTION) / WHEEL_CIRCUMFERENCE_MM;
+    static final double DRIVE_COUNTS_PER_IN = DRIVE_COUNTS_PER_MM * 25.4;
 
-    // inches, speed is 0-1
-    private void Move_Forward_Backward(int Distance, double Speed) {
-        Reset();
-        for (DcMotor motor : motors) {
-            motor.setTargetPosition(Distance*120);
-            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motor.setPower(Speed);
-        }
-        while (motors[0].isBusy() || motors[3].isBusy()) {
-            sleep(100);
-        }
-    }
-
-    private void Turning(double Target_Degrees) {
-        Reset();
-        motors[0].setTargetPosition((int) (Target_Degrees * -26.44));
-        motors[1].setTargetPosition((int) (Target_Degrees * -26.44));
-        motors[2].setTargetPosition((int) (Target_Degrees * 26.44));
-        motors[3].setTargetPosition((int) (Target_Degrees * 26.44));
-        for (DcMotor motor : motors) {
-            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motor.setPower(1);
-        }
-        while (motors[0].isBusy() || motors[3].isBusy()) {
-            sleep(100);
-        }
-    }
-
-    // inches
-    private void Move_Left_Right(int Distance) {
-        Reset();
-        motors[0].setTargetPosition(Distance * 144);
-        motors[2].setTargetPosition(Distance * -144);
-        motors[1].setTargetPosition(Distance * -144);
-        motors[3].setTargetPosition(Distance * 144);
-        for (DcMotor motor : motors) {
-            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motor.setPower(0.8);
-        }
-        while (motors[0].isBusy() || motors[3].isBusy()) {
-            sleep(100);
-        }
-    }
-
-    //0 to idk like 9000 ish?
-    private void SlideMovement(int Target) {
-        Reset();
-        slides.setTargetPosition(Target);
-        slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slides.setPower(1);
-        while (slides.isBusy()) {
-            sleep(100);
-        }
-    }
-    private void openClaw() {
-        right.setPosition(0.275);
-        left.setPosition(0.275);
-    }
     @Override
     public void runOpMode() {
-        motors[0] = hardwareMap.get(DcMotor.class, "leftFront");
-        motors[2] = hardwareMap.get(DcMotor.class, "rightFront");
-        motors[1] = hardwareMap.get(DcMotor.class, "leftRear");
-        motors[3] = hardwareMap.get(DcMotor.class, "rightRear");
-        slides = hardwareMap.get(DcMotor.class, "slides");
-        right = hardwareMap.get(Servo.class, "right");
-        left = hardwareMap.get(Servo.class, "left");
+        //leftblue demo
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("webcam", "webcam", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
+        FtcDashboard.getInstance().startCameraStream(webcam, 30);
+        pipeline = new SamplePipeline();
+        pipeline.setTeamColor(1); // ** 1 for red, 2 for blue **
+        webcam.setPipeline(pipeline);
+        //webcam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                // TODO: make sure resolution is highest that is supported by webcam
+                webcam.startStreaming(1280, 720, OpenCvCameraRotation.UPRIGHT);
+//                //0 for blue, 1 for red (maybe)
+//                //webcam.setTeamColor(0);
+//                snapshotAnalysis = pipeline.getAnalysis();
+////                webcam.stopStreaming();
+////                webcam.closeCameraDevice();
+//                telemetry.addLine("Analysis: "+snapshotAnalysis);
+            }
+            @Override
+            public void onError(int errorCode) {
+                //called if cam cannot be opened
+                snapshotAnalysis = SamplePipeline.PropPosition.CENTER;
+                telemetry.addLine("Analysis: Failed\nError: "+errorCode+"\nDefaulting to Center");
+            }
+        });
 
-        motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
-        motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
-        left.setDirection(Servo.Direction.REVERSE);
-        waitForStart();
-        // Put initialization blocks here. NO NECESSARY CHANGES ABOVE HERE
-        if (opModeIsActive()) {
-            // PUT AUTONOMOUS INSTRUCTIONS HERE
-            //
-            closeClaw();
-            SlideMovement(300);
-            Move_Left_Right(-24*2-6);
-            Move_Forward_Backward(24*2, 1);
-            openClaw();
-        }
-        while (opModeIsActive()) {
-            // Put loop blocks here.
+        //cam code done :3
+
+        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
+        leftSwiper = hardwareMap.get(Servo.class, "leftSwiper");
+//        rightSwiper = hardwareMap.get(Servo.class, "rightSwiper");
+
+        leftDrive.setDirection(DcMotor.Direction.FORWARD); //probably reverse
+        leftSwiper.setDirection(Servo.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        //rightSwiper.setDirection(Servo.Direction.REVERSE);
+
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+
+        //replaces waitForStart
+        while (!isStarted() && !isStopRequested())
+        {
+            telemetry.addData("Realtime analysis", pipeline.getAnalysis());
             telemetry.update();
-            telemetry.addData("rightFront", motors[2].getCurrentPosition());
-            telemetry.addData("leftFront", motors[0].getCurrentPosition());
-            telemetry.addData("rightRear", motors[3].getCurrentPosition());
-            telemetry.addData("leftRear", motors[1].getCurrentPosition());
+
+            // Don't burn CPU cycles busy-looping in this sample
+            sleep(50);
         }
-    }
-    private void closeClaw() {
-        right.setPosition(0.5);
-        left.setPosition(0.5);
-    }
-    private void Reset() {
-        for (DcMotor motor: motors) {
-            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        snapshotAnalysis = pipeline.getAnalysis();
+//
+        telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
+        telemetry.update();
+        //go forward a bit
+        // also change resolution boxes to fit 720p
+
+        closeSwipers();
+        drive(0.25,20,20);
+        switch (snapshotAnalysis) {
+            case LEFT: {
+                telemetry.addLine("LEFT");
+                turnLeft();
+                dropoff();
+                turnRight();
+                drive(0.25,24,24);
+                turnRight();
+            }
+            case RIGHT: {
+                telemetry.addLine("RIGHT");
+                turnRight();
+                dropoff();
+                turnLeft();
+                drive(0.25,24,24);
+                turnRight();
+            }
+            default: {
+                telemetry.addLine("CENTER");
+                drive(0.25,24,24);
+                turnRight();
+                turnRight();
+                dropoff();
+                turnLeft();
+            }
         }
-        slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        drive(0.25,24*2,24*2);
+
+        requestOpModeStop();
+
+
+
+        // Put initialization blocks here. NO NECESSARY CHANGES ABOVE HERE
+//        while (opModeIsActive()) {
+//            // Put loop blocks here.
+//            telemetry.update();
+//        }
+    }
+
+    public void openSwipers() {
+        leftSwiper.setPosition(.7);
+    }
+    public void closeSwipers() {
+        leftSwiper.setPosition(.3);
+    }
+
+    public void dropoff() {
+        drive(0.25,4,4);
+        openSwipers();
+        drive(0.25,-4,-4);
+        closeSwipers();
+    }
+
+    public void turnLeft() {
+        drive(0.25,-8,16);
+    }
+
+    public void turnRight() {
+        drive(0.25,16,-8);
+    }
+
+    private void drive(double power, double leftInches, double rightInches) { //code stolen from ff has motors in front, could be a prob idk
+        int rightTarget;
+        int leftTarget;
+
+        if (opModeIsActive()) {
+            // Create target positions
+            rightTarget = rightDrive.getCurrentPosition() + (int)(rightInches * DRIVE_COUNTS_PER_IN);
+            leftTarget = leftDrive.getCurrentPosition() + (int)(leftInches * DRIVE_COUNTS_PER_IN);
+
+            // set target position
+            leftDrive.setTargetPosition(leftTarget);
+            rightDrive.setTargetPosition(rightTarget);
+
+            //switch to run to position mode
+            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            //run to position at the desiginated power
+            leftDrive.setPower(power);
+            rightDrive.setPower(power);
+
+            // wait until both motors are no longer busy running to position //this entire part is cringe
+            while (opModeIsActive() && (leftDrive.isBusy() || rightDrive.isBusy())) {
+            }
+
+            // set motor power back to 0
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+        }
     }
 }
