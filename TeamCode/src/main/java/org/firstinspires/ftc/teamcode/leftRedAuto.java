@@ -86,6 +86,8 @@ public class leftRedAuto extends LinearOpMode {
             sleep(50);
         }
         snapshotAnalysis = pipeline.getAnalysis();
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
 //
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();

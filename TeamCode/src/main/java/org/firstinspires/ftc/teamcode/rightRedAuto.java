@@ -86,6 +86,9 @@ public class rightRedAuto extends LinearOpMode {
             sleep(50);
         }
         snapshotAnalysis = pipeline.getAnalysis();
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
+
 //
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
@@ -93,7 +96,7 @@ public class rightRedAuto extends LinearOpMode {
         // also change resolution boxes to fit 720p
 
         closeSwipers();
-        drive(0.25,40,40);
+        drive(0.25,20,20);
         switch (snapshotAnalysis) {
             case LEFT: {
                 telemetry.addLine("LEFT");
@@ -121,7 +124,7 @@ public class rightRedAuto extends LinearOpMode {
             }
         }
 
-        drive(0.25,24*2,24*2);
+        drive(0.25,24*4,24*2);
 
         requestOpModeStop();
 

@@ -37,11 +37,23 @@ public class TeleOp_NewBot extends LinearOpMode {
         leftSwiper.setDirection(Servo.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         rightSwiper.setDirection(Servo.Direction.REVERSE);
-        rightSwiper.setPosition(0.25);
-        leftSwiper.setPosition(.4);
+//        leftSwiper.setPosition(.3);
+//        runtime.reset();
+//        while(runtime.time()<1.0) {}
+//        rightSwiper.setPosition(.5);
+//
+//        runtime.reset();
+//        while(runtime.time()<1.0) {}
+//
+//        rightSwiper.setPosition(.9);
+//        runtime.reset();
+//        while(runtime.time()<.5) {}
+//        leftSwiper.setPosition(.7);
 
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        //maybe set mode?
 
         // Wait for the game to start (driver presses PLAY)
         telemetry.addLine("Init");
@@ -52,7 +64,7 @@ public class TeleOp_NewBot extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             swiperAction();
-            //powerAction();
+
 
             //DRIVE
             double drive = -gamepad1.left_stick_y;
@@ -69,22 +81,11 @@ public class TeleOp_NewBot extends LinearOpMode {
 
     public void swiperAction() {
         if(gamepad1.a) {
-            telemetry.addLine("Trying to open");
+            rightSwiper.setPosition(.9);
             leftSwiper.setPosition(.7);
-            rightSwiper.setPosition(.45);
         } else if (gamepad1.b) {
             leftSwiper.setPosition(.3);
-            rightSwiper.setPosition(.25);
-        }
-    }
-//
-    public void powerAction() {
-        if(gamepad1.y) {
-            upperPowerBound = 0.5;
-            lowerPowerBound =- 0.5;
-        } else {
-            upperPowerBound = 1.0;
-            lowerPowerBound =- -1.0;
+            rightSwiper.setPosition(.5);
         }
     }
 }

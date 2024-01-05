@@ -86,6 +86,8 @@ public class rightBlueAuto extends LinearOpMode {
             sleep(50);
         }
         snapshotAnalysis = pipeline.getAnalysis();
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
 //
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
@@ -101,7 +103,7 @@ public class rightBlueAuto extends LinearOpMode {
                 dropoff();
                 turnRight();
                 drive(0.25,24,24);
-                turnLeft();
+                turnRight();
             }
             case RIGHT: {
                 telemetry.addLine("RIGHT");
@@ -109,7 +111,7 @@ public class rightBlueAuto extends LinearOpMode {
                 dropoff();
                 turnLeft();
                 drive(0.25,24,24);
-                turnLeft();
+                turnRight();
             }
             default: {
                 telemetry.addLine("CENTER");
@@ -117,7 +119,7 @@ public class rightBlueAuto extends LinearOpMode {
                 turnRight();
                 turnRight();
                 dropoff();
-                turnRight();
+                turnLeft();
             }
         }
 
