@@ -19,7 +19,9 @@ public class TeleOp_Test extends LinearOpMode {
     private DcMotor leftDrive;
     private DcMotor rightDrive;
     private DcMotor motor;
-    private Servo arm;
+    private Servo arm1;
+    private Servo arm2;
+    private Servo claw;
     private double leftPower;
     private double rightPower;
     private final int TICKS_PER_REV = 288;
@@ -31,7 +33,9 @@ public class TeleOp_Test extends LinearOpMode {
 
         //initializing motors
         motor = hardwareMap.get(DcMotor.class, "hexMotor");
-        arm = hardwareMap.get(Servo.class, "arm");
+        arm1 = hardwareMap.get(Servo.class, "arm1");
+        arm2 = hardwareMap.get(Servo.class, "arm2");
+        claw = hardwareMap.get(Servo.class, "claw");
 
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
@@ -48,7 +52,10 @@ public class TeleOp_Test extends LinearOpMode {
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         //arm.setPosition(0);
-        arm.setDirection(Servo.Direction.REVERSE);
+        arm1.setDirection(Servo.Direction.REVERSE);
+        arm2.setDirection(Servo.Direction.FORWARD);
+        claw.setDirection(Servo.Direction.FORWARD);
+
 
         // Wait for the game to start (driver presses PLAY)
         telemetry.addLine("Init");
@@ -60,6 +67,7 @@ public class TeleOp_Test extends LinearOpMode {
         while (opModeIsActive()) {
             motorAction();
             armAction();
+            clawAction();
 
             //DRIVE
             double drive = -gamepad1.left_stick_y;
@@ -70,17 +78,19 @@ public class TeleOp_Test extends LinearOpMode {
             leftDrive.setPower(leftPower);
             rightDrive.setPower(rightPower);
 
-            telemetry.addLine(arm.getPosition()+"");
+            //telemetry.addLine(arm1.getPosition()+"");
+            telemetry.addLine(arm2.getPosition()+"");
             telemetry.addLine(motor.getCurrentPosition()+"");
+            telemetry.addLine(claw.getPosition()+"");
 
             telemetry.update();
         }
     }
 
     public void motorAction() {
-        if(gamepad1.x) {
+        if(gamepad1.dpad_down) {
             motor.setTargetPosition(0);
-        } else if (gamepad1.y) {
+        } else if (gamepad1.dpad_up) {
             motor.setTargetPosition((int) (-5 * TICKS_PER_INCH));
         } else if (gamepad1.left_bumper) {
             motor.setTargetPosition((int) (5 * TICKS_PER_INCH));
@@ -94,12 +104,22 @@ public class TeleOp_Test extends LinearOpMode {
     }
 
     public void armAction() {
-        if(gamepad1.a) {
+        if(gamepad1.x) {
             telemetry.addLine("trying to raise");
-            arm.setPosition(0.55);
-        } else if (gamepad1.b) {
+            arm1.setPosition(.3);
+            arm2.setPosition(.3);
+        } else if (gamepad1.y) {
             telemetry.addLine("trying to lower");
-            arm.setPosition(0.475);
+            arm1.setPosition(.7);
+            arm2.setPosition(.7);
+        }
+    }
+
+    public void clawAction() {
+        if(gamepad1.a) {
+            claw.setPosition(.5);
+        } else if (gamepad1.b) {
+            claw.setPosition(0);
         }
     }
 }
