@@ -65,8 +65,8 @@ public class TeleOp_Test extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            motorAction();
-            armAction();
+            //motorAction();
+            //armAction();
             clawAction();
 
             //DRIVE

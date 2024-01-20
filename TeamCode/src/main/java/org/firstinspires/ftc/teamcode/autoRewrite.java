@@ -19,6 +19,7 @@ public class autoRewrite extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive;
     private DcMotor rightDrive;
+    private DcMotor motor;
     private DcMotor extendArm;
     private Servo arm;
     private Servo claw;
@@ -32,12 +33,13 @@ public class autoRewrite extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        camInit(2);
+        //camInit(1); // ** 1 for red, 2 for blue **
 
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
         extendArm = hardwareMap.get(DcMotor.class, "hexMotor");
         arm = hardwareMap.get(Servo.class, "arm1");
+        motor = hardwareMap.get(DcMotor.class, "hexMotor");
         claw = hardwareMap.get(Servo.class, "claw");
 
 
@@ -46,6 +48,11 @@ public class autoRewrite extends LinearOpMode {
 
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        motor.setDirection(DcMotor.Direction.REVERSE);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setTargetPosition(0);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //replaces waitForStart
         while (!isStarted() && !isStopRequested())
@@ -57,54 +64,44 @@ public class autoRewrite extends LinearOpMode {
             sleep(50);
         }
 
-        snapshotAnalysis = pipeline.getAnalysis();
-        webcam.stopStreaming();
-        webcam.closeCameraDevice();
+        //snapshotAnalysis = pipeline.getAnalysis();
+        //webcam.stopStreaming();
+        //webcam.closeCameraDevice();
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
+
 
         closeClaw();
         waitASec();
         drive(28,true);
-        switch (snapshotAnalysis) {
-            case LEFT: {
-                turnRight();
-                //drive(1,false);
-            }
-            case RIGHT: {
-                turnLeft();
-                drive(6,false);
-            }
-            default: {
-                turnLeft();
-                turnLeft();
-                drive(6,false);
-            }
-        }
+//        switch (snapshotAnalysis) {
+//            case LEFT: {
+//                drive(2,true);
+//                turnRight();
+//                //drive(1,false);
+//            }
+//            case RIGHT: {
+//                turnLeft();
+//                drive(6,false);
+//            }
+//            case CENTER: {
+//                turnLeft();
+//                drive(3,true);
+//                turnLeft();
+//                drive(10,false);
+//            }
+//        }
 
+        turnLeft();
+        drive(3,true);
+        turnLeft();
+        drive(10,false);
         waitASec();
         openClaw();
         waitASec();
         drive(6,true);
 
-
-
-//        drive(1,1);
-//        runtime.reset();
-//        while(runtime.time()<1.0) {}
-//        closeClaw();
-//        waitASec();
-//        drive(28,true);
-//        turnLeft();
-//        drive(12,false);
-//        waitASec();
-//        openClaw();
-//        waitASec();
-//        drive(6,true);
-//        turnRight();
-//        turnLeft();
-//        turnLeft();
-//        drive(24);
+//        drive(24,true);
 
     }
 
@@ -146,27 +143,27 @@ public class autoRewrite extends LinearOpMode {
             leftDrive.setDirection(DcMotor.Direction.FORWARD);
             rightDrive.setDirection(DcMotor.Direction.REVERSE);
         }
-        leftDrive.setPower(0.4);
-        rightDrive.setPower(0.4);
+
+        leftDrive.setPower(0.2);
+        rightDrive.setPower(0.2);
         //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         runtime.reset();
-        while(runtime.time()<0.075*inches && opModeIsActive()) {}
+        while(runtime.time()<0.12*inches && opModeIsActive()) {}
         leftDrive.setPower(0);
         rightDrive.setPower(0);
     }
 
     public void turnLeft() {
         leftDrive.setPower(0.4);
-
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setPower(0.4);
+        //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         runtime.reset();
-        while(runtime.time()<0.2*8.25  && opModeIsActive()) {}
+        while(runtime.time()<0.12*7.5 && opModeIsActive()) {}
         leftDrive.setPower(0);
         rightDrive.setPower(0);
-
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
     }
@@ -177,7 +174,7 @@ public class autoRewrite extends LinearOpMode {
         rightDrive.setPower(0.4);
 
         runtime.reset();
-        while(runtime.time()<0.2*8.25  && opModeIsActive()) {}
+        while(runtime.time()<0.12*7.5  && opModeIsActive()) {}
         leftDrive.setPower(0);
         rightDrive.setPower(0);
 
