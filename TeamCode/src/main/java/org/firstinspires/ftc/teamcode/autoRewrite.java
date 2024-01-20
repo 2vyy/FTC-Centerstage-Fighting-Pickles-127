@@ -63,47 +63,48 @@ public class autoRewrite extends LinearOpMode {
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
 
-//        drive(24,24);
-//        switch (snapshotAnalysis) {
-//            case LEFT: {
-//                turnLeft();
-//                dropOff(6);
-//                turnRight();
-//                drive(24,24);
-//                turnRight();
-//                drive(3*24,3*24);
-//                turnRight();
-//            }
-//            case RIGHT: {
-//                turnRight();
-//                dropOff(6);
-//                turnLeft();
-//                drive(24,24);
-//                turnRight();
-//                drive(3*24,3*24);
-//                turnRight();
-//            }
-//            default: {
-//                drive(24,24);
-//                turnRight();
-//                turnRight();
-//                dropOff(6);
-//                turnLeft();
-//                drive(3*24,3*24);
-//                turnRight();
-//            }
-//        }
-//
-//        drive(12,12);
+        closeClaw();
+        waitASec();
+        drive(28,true);
+        switch (snapshotAnalysis) {
+            case LEFT: {
+                turnRight();
+                //drive(1,false);
+            }
+            case RIGHT: {
+                turnLeft();
+                drive(6,false);
+            }
+            default: {
+                turnLeft();
+                turnLeft();
+                drive(6,false);
+            }
+        }
+
+        waitASec();
+        openClaw();
+        waitASec();
+        drive(6,true);
 
 
 
 //        drive(1,1);
 //        runtime.reset();
 //        while(runtime.time()<1.0) {}
-
-        drive(12);
-        turnLeft();
+//        closeClaw();
+//        waitASec();
+//        drive(28,true);
+//        turnLeft();
+//        drive(12,false);
+//        waitASec();
+//        openClaw();
+//        waitASec();
+//        drive(6,true);
+//        turnRight();
+//        turnLeft();
+//        turnLeft();
+//        drive(24);
 
     }
 
@@ -137,13 +138,20 @@ public class autoRewrite extends LinearOpMode {
         });
     }
 
-    public void drive(double inches) {
-        leftDrive.setPower(0.2);
-        rightDrive.setPower(0.2);
+    public void drive(double inches, boolean goingForward) { // a little off, might need increase
+        if(goingForward) {
+            leftDrive.setDirection(DcMotor.Direction.REVERSE);
+            rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        } else {
+            leftDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        }
+        leftDrive.setPower(0.4);
+        rightDrive.setPower(0.4);
         //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         runtime.reset();
-        while(runtime.time()<0.15*inches) {}
+        while(runtime.time()<0.075*inches && opModeIsActive()) {}
         leftDrive.setPower(0);
         rightDrive.setPower(0);
     }
@@ -155,17 +163,41 @@ public class autoRewrite extends LinearOpMode {
         rightDrive.setPower(0.4);
 
         runtime.reset();
-        while(runtime.time()<0.15*3) {}
+        while(runtime.time()<0.2*8.25  && opModeIsActive()) {}
         leftDrive.setPower(0);
         rightDrive.setPower(0);
 
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
     }
-    public void turnRight() {}
+    public void turnRight() {
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftDrive.setPower(0.4);
+
+        rightDrive.setPower(0.4);
+
+        runtime.reset();
+        while(runtime.time()<0.2*8.25  && opModeIsActive()) {}
+        leftDrive.setPower(0);
+        rightDrive.setPower(0);
+
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+    }
+
+    public void openClaw() {
+        claw.setPosition(.5);
+    }
+    public void closeClaw() {
+        claw.setPosition(0);
+    }
 
     public void dropOff(double inches) {
-        drive(inches);
-        drive(-inches);
+        drive(inches, false);
+        drive(inches, true);
+    }
+
+    public void waitASec() {
+        runtime.reset();
+        while(runtime.time()<1.5 && opModeIsActive()) {}
     }
 }
