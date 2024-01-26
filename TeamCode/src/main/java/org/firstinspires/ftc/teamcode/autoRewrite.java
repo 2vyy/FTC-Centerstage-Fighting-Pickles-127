@@ -71,37 +71,6 @@ public class autoRewrite extends LinearOpMode {
         telemetry.update();
 
 
-        closeClaw();
-        waitASec();
-        drive(28,true);
-//        switch (snapshotAnalysis) {
-//            case LEFT: {
-//                drive(2,true);
-//                turnRight();
-//                //drive(1,false);
-//            }
-//            case RIGHT: {
-//                turnLeft();
-//                drive(6,false);
-//            }
-//            case CENTER: {
-//                turnLeft();
-//                drive(3,true);
-//                turnLeft();
-//                drive(10,false);
-//            }
-//        }
-
-        turnLeft();
-        drive(3,true);
-        turnLeft();
-        drive(10,false);
-        waitASec();
-        openClaw();
-        waitASec();
-        drive(6,true);
-
-//        drive(24,true);
 
     }
 
@@ -135,8 +104,8 @@ public class autoRewrite extends LinearOpMode {
         });
     }
 
-    public void drive(double inches, boolean goingForward) { // a little off, might need increase
-        if(goingForward) {
+    public void drive(double inches) { // a little off, might need increase
+        if(inches<1) {
             leftDrive.setDirection(DcMotor.Direction.REVERSE);
             rightDrive.setDirection(DcMotor.Direction.FORWARD);
         } else {
@@ -144,12 +113,17 @@ public class autoRewrite extends LinearOpMode {
             rightDrive.setDirection(DcMotor.Direction.REVERSE);
         }
 
+        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
+        leftDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
+
         leftDrive.setPower(0.2);
         rightDrive.setPower(0.2);
-        //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        runtime.reset();
-        while(runtime.time()<0.12*inches && opModeIsActive()) {}
+        while(opModeIsActive() && (leftDrive.isBusy() || rightDrive.isBusy())) {}
+
         leftDrive.setPower(0);
         rightDrive.setPower(0);
     }
@@ -189,8 +163,8 @@ public class autoRewrite extends LinearOpMode {
     }
 
     public void dropOff(double inches) {
-        drive(inches, false);
-        drive(inches, true);
+        drive(inches);
+        drive(inches);
     }
 
     public void waitASec() {

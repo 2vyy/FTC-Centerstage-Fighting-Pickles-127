@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,13 +15,13 @@ import com.qualcomm.robotcore.util.Range;
 public class TeleOp_Test extends LinearOpMode {
 
     // Declare OpMode members.
-    //private ElapsedTime runtime = new ElapsedTime();
+    private ElapsedTime arm_timer = new ElapsedTime();
 
     private DcMotor leftDrive;
     private DcMotor rightDrive;
     private DcMotor motor;
-    private Servo arm1;
-    private Servo arm2;
+    private CRServo leftArm;
+    private CRServo rightArm;
     private Servo claw;
     private double leftPower;
     private double rightPower;
@@ -28,13 +29,21 @@ public class TeleOp_Test extends LinearOpMode {
     private final double CIRCUMFERENCE = 3.14;
     private final double TICKS_PER_INCH = TICKS_PER_REV/CIRCUMFERENCE;
 
+    private enum ARM_POS {
+        UP,
+        DOWN,
+        HOLD
+    }
+
+    private ARM_POS current_pos = ARM_POS.HOLD;
+
     @Override
     public void runOpMode() {
 
         //initializing motors
         motor = hardwareMap.get(DcMotor.class, "hexMotor");
-        arm1 = hardwareMap.get(Servo.class, "arm1");
-        arm2 = hardwareMap.get(Servo.class, "arm2");
+        leftArm = hardwareMap.get(CRServo.class, "left");
+        rightArm = hardwareMap.get(CRServo.class, "right");
         claw = hardwareMap.get(Servo.class, "claw");
 
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
@@ -48,12 +57,15 @@ public class TeleOp_Test extends LinearOpMode {
         motor.setTargetPosition(0);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        //motor.setTargetPosition(50);
+        motor.setPower(.4);
+
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         //arm.setPosition(0);
-        arm1.setDirection(Servo.Direction.REVERSE);
-        arm2.setDirection(Servo.Direction.FORWARD);
+        leftArm.setDirection(CRServo.Direction.FORWARD);
+        rightArm.setDirection(CRServo.Direction.REVERSE);
         claw.setDirection(Servo.Direction.FORWARD);
 
 
@@ -66,8 +78,8 @@ public class TeleOp_Test extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             //motorAction();
-            //armAction();
-            clawAction();
+            armAction();
+            //clawAction();
 
             //DRIVE
             double drive = -gamepad1.left_stick_y;
@@ -79,45 +91,77 @@ public class TeleOp_Test extends LinearOpMode {
             rightDrive.setPower(rightPower);
 
             //telemetry.addLine(arm1.getPosition()+"");
-            telemetry.addLine(arm2.getPosition()+"");
+            telemetry.addLine(leftArm.getPower()+"");
+            telemetry.addLine(rightArm.getPower()+"");
             telemetry.addLine(motor.getCurrentPosition()+"");
             telemetry.addLine(claw.getPosition()+"");
+            telemetry.addLine(current_pos+"");
+            telemetry.addLine(arm_timer+"");
 
             telemetry.update();
         }
     }
 
     public void motorAction() {
-        if(gamepad1.dpad_down) {
+        if(gamepad1.x) {
             motor.setTargetPosition(0);
-        } else if (gamepad1.dpad_up) {
-            motor.setTargetPosition((int) (-5 * TICKS_PER_INCH));
         } else if (gamepad1.left_bumper) {
-            motor.setTargetPosition((int) (5 * TICKS_PER_INCH));
+            motor.setTargetPosition((int) (-3.5 * TICKS_PER_INCH));
+        } else if (gamepad1.y) {
+            motor.setTargetPosition((int) (3.5 * TICKS_PER_INCH));
         }
 
-        if(!motor.isBusy()) {
-            motor.setPower(0);
-        } else {
-            motor.setPower(.2);
-        }
+//        if(!motor.isBusy()) {
+//            motor.setPower(0);
+//        } else {
+//            motor.setPower(.2);
+//        }
     }
 
     public void armAction() {
-        if(gamepad1.x) {
-            telemetry.addLine("trying to raise");
-            arm1.setPosition(.3);
-            arm2.setPosition(.3);
-        } else if (gamepad1.y) {
-            telemetry.addLine("trying to lower");
-            arm1.setPosition(.7);
-            arm2.setPosition(.7);
+        if(gamepad1.dpad_down) {
+            current_pos = ARM_POS.DOWN;
+        } else if (gamepad1.dpad_up) {
+            current_pos = ARM_POS.UP;
+        }
+
+        switch(current_pos) {
+            case HOLD: {
+                if(leftArm.getPower()!=1) {
+                    leftArm.setPower(-.1);
+                    rightArm.setPower(-.1);
+                }
+            }
+            break;
+
+            case UP: {
+                if(arm_timer.time()>1) {
+                    arm_timer.reset();
+                }
+                leftArm.setPower(-.4);
+                rightArm.setPower(-.4);
+            }
+            break;
+
+            case DOWN: {
+                if(arm_timer.time()>1) {
+                    arm_timer.reset();
+                }
+                leftArm.setPower(.2);
+                rightArm.setPower(.2);
+            }
+            break;
+
+        }
+
+        if(arm_timer.time()>.75) {
+            current_pos = ARM_POS.HOLD;
         }
     }
 
     public void clawAction() {
         if(gamepad1.a) {
-            claw.setPosition(.5);
+            claw.setPosition(.75);
         } else if (gamepad1.b) {
             claw.setPosition(0);
         }
