@@ -25,6 +25,7 @@ public class TeleOp_Test extends LinearOpMode {
     private Servo claw;
     private double leftPower;
     private double rightPower;
+    private double speedLimit;
     private final int TICKS_PER_REV = 288;
     private final double CIRCUMFERENCE = 3.14;
     private final double TICKS_PER_INCH = TICKS_PER_REV/CIRCUMFERENCE;
@@ -57,17 +58,17 @@ public class TeleOp_Test extends LinearOpMode {
         motor.setTargetPosition(0);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        //motor.setTargetPosition(50);
         motor.setPower(.4);
 
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        //arm.setPosition(0);
         leftArm.setDirection(CRServo.Direction.FORWARD);
         rightArm.setDirection(CRServo.Direction.REVERSE);
         claw.setDirection(Servo.Direction.FORWARD);
 
+        leftArm.setPower(0);
+        rightArm.setPower(0);
 
         // Wait for the game to start (driver presses PLAY)
         telemetry.addLine("Init");
@@ -77,18 +78,10 @@ public class TeleOp_Test extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            //motorAction();
+            motorAction();
             armAction();
-            //clawAction();
-
-            //DRIVE
-            double drive = -gamepad1.left_stick_y;
-            double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
+            clawAction();
+            driveAction(-gamepad1.left_stick_y, gamepad1.right_stick_x);
 
             //telemetry.addLine(arm1.getPosition()+"");
             telemetry.addLine(leftArm.getPower()+"");
@@ -102,13 +95,27 @@ public class TeleOp_Test extends LinearOpMode {
         }
     }
 
+    public void driveAction(double drive, double turn) {
+        if(gamepad1.right_trigger>0.2) {
+            speedLimit = 0.25;
+        } else {
+            speedLimit = 1.0;
+        }
+
+        leftPower    = Range.clip(drive + turn, -speedLimit, speedLimit) ;
+        rightPower   = Range.clip(drive - turn, -speedLimit, speedLimit) ;
+
+        leftDrive.setPower(leftPower);
+        rightDrive.setPower(rightPower);
+    }
+
     public void motorAction() {
         if(gamepad1.x) {
             motor.setTargetPosition(0);
         } else if (gamepad1.left_bumper) {
-            motor.setTargetPosition((int) (-3.5 * TICKS_PER_INCH));
+            motor.setTargetPosition((int) (-4.1 * TICKS_PER_INCH));
         } else if (gamepad1.y) {
-            motor.setTargetPosition((int) (3.5 * TICKS_PER_INCH));
+            motor.setTargetPosition((int) (4.1 * TICKS_PER_INCH));
         }
 
 //        if(!motor.isBusy()) {
@@ -127,7 +134,8 @@ public class TeleOp_Test extends LinearOpMode {
 
         switch(current_pos) {
             case HOLD: {
-                if(leftArm.getPower()!=1) {
+                double leftArmPower = leftArm.getPower();
+                if(leftArmPower!=0 && leftArmPower!=-.1) {
                     leftArm.setPower(-.1);
                     rightArm.setPower(-.1);
                 }
@@ -138,8 +146,8 @@ public class TeleOp_Test extends LinearOpMode {
                 if(arm_timer.time()>1) {
                     arm_timer.reset();
                 }
-                leftArm.setPower(-.4);
-                rightArm.setPower(-.4);
+                leftArm.setPower(-.45);
+                rightArm.setPower(-.45);
             }
             break;
 
@@ -155,13 +163,17 @@ public class TeleOp_Test extends LinearOpMode {
         }
 
         if(arm_timer.time()>.75) {
+            if(current_pos == ARM_POS.DOWN) {
+                leftArm.setPower(0);
+                rightArm.setPower(0);
+            }
             current_pos = ARM_POS.HOLD;
         }
     }
 
     public void clawAction() {
         if(gamepad1.a) {
-            claw.setPosition(.75);
+            claw.setPosition(.1);
         } else if (gamepad1.b) {
             claw.setPosition(0);
         }
