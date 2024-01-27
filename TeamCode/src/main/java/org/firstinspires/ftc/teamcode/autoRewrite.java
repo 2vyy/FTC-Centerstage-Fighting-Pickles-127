@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.text.InputFilter;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -20,39 +23,51 @@ public class autoRewrite extends LinearOpMode {
     private DcMotor leftDrive;
     private DcMotor rightDrive;
     private DcMotor motor;
-    private DcMotor extendArm;
-    private Servo arm;
+    private CRServo leftArm;
+    private CRServo rightArm;
     private Servo claw;
     OpenCvWebcam webcam;
     SamplePipeline pipeline;
     SamplePipeline.PropPosition snapshotAnalysis = SamplePipeline.PropPosition.CENTER;
 
-    private final int TICKS_PER_REV = 28 * 20;
-    private final double CIRCUMFERENCE = 10.99;
+    private final double MOTOR_TICKS_PER_REV = 288;
+    private final double MOTOR_CIRCUMFERENCE = 3.14;
+    private final double MOTOR_TICKS_PER_INCH = MOTOR_TICKS_PER_REV/MOTOR_CIRCUMFERENCE;
+    private final double TICKS_PER_REV = 28 * 20;
+    private final double CIRCUMFERENCE = 10.99*1.1;
     private final double TICKS_PER_INCH = TICKS_PER_REV/CIRCUMFERENCE;
 
     @Override
     public void runOpMode() {
-        //camInit(1); // ** 1 for red, 2 for blue **
+        camInit(1); // ** 1 for red, 2 for blue **
+
+        motor = hardwareMap.get(DcMotor.class, "hexMotor");
+        leftArm = hardwareMap.get(CRServo.class, "left");
+        rightArm = hardwareMap.get(CRServo.class, "right");
+        claw = hardwareMap.get(Servo.class, "claw");
 
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
-        extendArm = hardwareMap.get(DcMotor.class, "hexMotor");
-        arm = hardwareMap.get(Servo.class, "arm1");
-        motor = hardwareMap.get(DcMotor.class, "hexMotor");
-        claw = hardwareMap.get(Servo.class, "claw");
 
-
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
-
-        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         motor.setDirection(DcMotor.Direction.REVERSE);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setTargetPosition(0);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motor.setPower(.4);
+
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        leftArm.setDirection(CRServo.Direction.FORWARD);
+        rightArm.setDirection(CRServo.Direction.REVERSE);
+        claw.setDirection(Servo.Direction.FORWARD);
+
+        leftArm.setPower(0);
+        rightArm.setPower(0);
 
         //replaces waitForStart
         while (!isStarted() && !isStopRequested())
@@ -64,13 +79,51 @@ public class autoRewrite extends LinearOpMode {
             sleep(50);
         }
 
-        //snapshotAnalysis = pipeline.getAnalysis();
-        //webcam.stopStreaming();
-        //webcam.closeCameraDevice();
+        snapshotAnalysis = pipeline.getAnalysis();
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
 
 
+
+//        drive(24); left (no score on backboard
+//        turnLeft();
+//        dropOff(7);
+//        turnRight();
+//        drive(24);
+//        turnRight();
+//        drive(-24*3);
+
+        closeClaw();
+        waitASec(.5);
+        drive(24); //right
+        turnRight();
+        dropOff(8);
+        turnLeft();
+        drive(24);
+        turnRight();
+        drive(-24*2);
+        turnLeft();
+        drive(-20);
+        turnRight();
+        drive(-9);
+
+        waitASec(.5);
+        raiseArm();
+        armForward();
+        drive(3);
+        openClaw();
+        waitASec(2);
+        closeClaw();
+        waitASec(.5);
+        armBack();
+        lowerArm();
+
+//        drive(24); center
+//        dropOff(7);
+//        turnRight();
+//        drive(-24*2.4);
 
     }
 
@@ -105,58 +158,55 @@ public class autoRewrite extends LinearOpMode {
     }
 
     public void drive(double inches) { // a little off, might need increase
-        if(inches<1) {
-            leftDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightDrive.setDirection(DcMotor.Direction.FORWARD);
-        } else {
-            leftDrive.setDirection(DcMotor.Direction.FORWARD);
-            rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        }
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        leftDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
-        leftDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         leftDrive.setPower(0.2);
         rightDrive.setPower(0.2);
 
-        while(opModeIsActive() && (leftDrive.isBusy() || rightDrive.isBusy())) {}
+        leftDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
+        rightDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
 
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
+        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while(opModeIsActive() && (leftDrive.isBusy() || rightDrive.isBusy())) {}
     }
 
     public void turnLeft() {
-        leftDrive.setPower(0.4);
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setPower(0.4);
-        //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        runtime.reset();
-        while(runtime.time()<0.12*7.5 && opModeIsActive()) {}
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftDrive.setPower(0.2);
+        rightDrive.setPower(0.2);
+
+        waitASec(1.35);
         leftDrive.setPower(0);
         rightDrive.setPower(0);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
-
     }
     public void turnRight() {
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftDrive.setPower(0.4);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        rightDrive.setPower(0.4);
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        runtime.reset();
-        while(runtime.time()<0.12*7.5  && opModeIsActive()) {}
+        leftDrive.setPower(0.2);
+        rightDrive.setPower(0.2);
+
+        waitASec(1.35);
         leftDrive.setPower(0);
         rightDrive.setPower(0);
-
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public void openClaw() {
-        claw.setPosition(.5);
+        claw.setPosition(.1);
     }
     public void closeClaw() {
         claw.setPosition(0);
@@ -164,11 +214,38 @@ public class autoRewrite extends LinearOpMode {
 
     public void dropOff(double inches) {
         drive(inches);
-        drive(inches);
+        waitASec(1);
+        drive(-inches);
     }
 
-    public void waitASec() {
-        runtime.reset();
-        while(runtime.time()<1.5 && opModeIsActive()) {}
+    public void raiseArm() {
+        leftArm.setPower(-.45);
+        rightArm.setPower(-.45);
+        waitASec(.75);
+        leftArm.setPower(-.1);
+        rightArm.setPower(-.1);
     }
-}
+
+    public void lowerArm() {
+        leftArm.setPower(.2);
+        rightArm.setPower(.2);
+        waitASec(.75);
+        leftArm.setPower(0);
+        rightArm.setPower(0);
+    }
+
+    public void armForward() {
+        motor.setTargetPosition((int) (4.1 * MOTOR_TICKS_PER_INCH));
+        runtime.reset();
+        while(motor.isBusy() && opModeIsActive()) {}
+    }
+
+    public void armBack() {
+        motor.setTargetPosition(0);
+        while(motor.isBusy() && opModeIsActive()) {}
+    }
+
+    public void waitASec(double seconds) {
+        runtime.reset();
+        while(runtime.time()<seconds && opModeIsActive()) {}
+    }}
