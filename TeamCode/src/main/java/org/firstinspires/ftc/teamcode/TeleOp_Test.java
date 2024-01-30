@@ -102,8 +102,9 @@ public class TeleOp_Test extends LinearOpMode {
             speedLimit = 1.0;
         }
 
-        leftPower    = Range.clip(drive + turn, -speedLimit, speedLimit) ;
-        rightPower   = Range.clip(drive - turn, -speedLimit, speedLimit) ;
+        double denominator = Math.max(Math.abs(drive) + Math.abs(turn), 1);
+        leftPower    = Range.clip(drive + turn, -speedLimit, speedLimit) / denominator ;
+        rightPower   = Range.clip(drive - turn, -speedLimit, speedLimit) / denominator ;
 
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);

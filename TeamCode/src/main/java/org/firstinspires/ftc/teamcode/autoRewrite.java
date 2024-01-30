@@ -87,7 +87,7 @@ public class autoRewrite extends LinearOpMode {
 
 
 
-//        drive(24); left (no score on backboard
+//        drive(24); left (no score on backboard //fix this
 //        turnLeft();
 //        dropOff(7);
 //        turnRight();
@@ -96,29 +96,59 @@ public class autoRewrite extends LinearOpMode {
 //        drive(-24*3);
 
         closeClaw();
-        waitASec(.5);
-        drive(24); //right
-        turnRight();
-        dropOff(8);
-        turnLeft();
+        //waitASec(.5);
         drive(24);
+
+//        turnRight(); blue-left, right tp
+//        dropOff(10);
+//        turnLeft();
+//        drive(20);
+//        turnRight();
+//        drive(-24*2);
+
+//        turnLeft(); blue-left, left tp
+//        dropOff(4);
+//        turnRight();
+//        drive(18);
+//        turnRight();
+//        drive(-24*1.75);
+
+        dropOff(6); // blue-left, center tp
         turnRight();
-        drive(-24*2);
+        drive(-24);
+        turnRight();
+        drive(-24);
         turnLeft();
         drive(-20);
-        turnRight();
-        drive(-9);
 
-        waitASec(.5);
-        raiseArm();
-        armForward();
-        drive(3);
-        openClaw();
-        waitASec(2);
-        closeClaw();
-        waitASec(.5);
-        armBack();
-        lowerArm();
+
+//        turnRight(); blue-right, right tp .375
+//        dropOff(6);
+//        turnLeft();
+//        drive(24);
+//        turnRight();
+//        drive(-24*4);
+
+//        dropOff(6); blue right, center tp
+//        turnRight();
+//        drive(18);
+//        turnLeft();
+//        drive(24);
+//        turnRight();
+//        drive(-24*4.5);
+
+//        turnLeft(); blue right, left tp
+//        dropOff(10);
+//        turnRight();
+//        drive(24);
+//        turnRight();
+//        drive(-24*4);
+
+        //turnLeft();
+//        drive(-24*3);
+//        turnLeft();
+//        drive(6);
+//        turnRight();
 
 //        drive(24); center
 //        dropOff(7);
@@ -164,8 +194,8 @@ public class autoRewrite extends LinearOpMode {
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        leftDrive.setPower(0.2);
-        rightDrive.setPower(0.2);
+        leftDrive.setPower(0.3);
+        rightDrive.setPower(0.3);
 
         leftDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
         rightDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
@@ -186,7 +216,7 @@ public class autoRewrite extends LinearOpMode {
         leftDrive.setPower(0.2);
         rightDrive.setPower(0.2);
 
-        waitASec(1.35);
+        waitASec(1.4);
         leftDrive.setPower(0);
         rightDrive.setPower(0);
     }
@@ -200,7 +230,7 @@ public class autoRewrite extends LinearOpMode {
         leftDrive.setPower(0.2);
         rightDrive.setPower(0.2);
 
-        waitASec(1.35);
+        waitASec(1.4);
         leftDrive.setPower(0);
         rightDrive.setPower(0);
     }
@@ -214,7 +244,7 @@ public class autoRewrite extends LinearOpMode {
 
     public void dropOff(double inches) {
         drive(inches);
-        waitASec(1);
+        //waitASec(.25);
         drive(-inches);
     }
 
