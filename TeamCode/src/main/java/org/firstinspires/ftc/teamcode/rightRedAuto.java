@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -12,32 +14,117 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-// a lot of this is inspired/stolen from https://github.com/OpenFTC/EasyOpenCV/blob/master/examples/src/main/java/org/firstinspires/ftc/teamcode/WebcamExample.java
-// the link has much more in depth explanations on what each line does and why
-
 @Autonomous(name = "rightRedAuto")
 public class rightRedAuto extends LinearOpMode {
+    private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive;
     private DcMotor rightDrive;
-    private Servo leftSwiper;
+    private DcMotor motor;
+    private CRServo leftArm;
+    private CRServo rightArm;
+    private Servo claw;
     OpenCvWebcam webcam;
     SamplePipeline pipeline;
     SamplePipeline.PropPosition snapshotAnalysis = SamplePipeline.PropPosition.CENTER;
 
-    static final double HD_COUNTS_PER_REV = 28;
-    static final double DRIVE_GEAR_REDUCTION = 20.15293;
-    static final double WHEEL_CIRCUMFERENCE_MM = 90 * Math.PI;
-    static final double DRIVE_COUNTS_PER_MM = (HD_COUNTS_PER_REV * DRIVE_GEAR_REDUCTION) / WHEEL_CIRCUMFERENCE_MM;
-    static final double DRIVE_COUNTS_PER_IN = DRIVE_COUNTS_PER_MM * 25.4;
+    private final double MOTOR_TICKS_PER_REV = 288;
+    private final double MOTOR_CIRCUMFERENCE = 3.14;
+    private final double MOTOR_TICKS_PER_INCH = MOTOR_TICKS_PER_REV/MOTOR_CIRCUMFERENCE;
+    private final double TICKS_PER_REV = 28 * 20;
+    private final double CIRCUMFERENCE = 10.99*1.1;
+    private final double TICKS_PER_INCH = TICKS_PER_REV/CIRCUMFERENCE;
 
     @Override
     public void runOpMode() {
-        //leftblue demo
+        camInit(1); // ** 1 for red, 2 for blue **
+
+        motor = hardwareMap.get(DcMotor.class, "hexMotor");
+        leftArm = hardwareMap.get(CRServo.class, "left");
+        rightArm = hardwareMap.get(CRServo.class, "right");
+        claw = hardwareMap.get(Servo.class, "claw");
+
+        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
+
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+
+        motor.setDirection(DcMotor.Direction.REVERSE);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setTargetPosition(0);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motor.setPower(.4);
+
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        leftArm.setDirection(CRServo.Direction.FORWARD);
+        rightArm.setDirection(CRServo.Direction.REVERSE);
+        claw.setDirection(Servo.Direction.FORWARD);
+
+        leftArm.setPower(0);
+        rightArm.setPower(0);
+
+        //replaces waitForStart
+        while (!isStarted() && !isStopRequested())
+        {
+            telemetry.addData("Realtime analysis", pipeline.getAnalysis());
+            telemetry.update();
+
+            // Don't burn CPU cycles
+            sleep(50);
+        }
+
+        snapshotAnalysis = pipeline.getAnalysis();
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
+        telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
+        telemetry.update();
+
+
+        closeClaw();
+        //waitASec(.5);
+        drive(24);
+        switch(snapshotAnalysis) { //red-right
+            case LEFT: {
+                turnLeft(); //red-right, left tp
+                dropOff(10);
+                turnRight();
+                drive(18);
+                turnLeft();
+                drive(-24*1.75);
+                break;
+            }
+            case RIGHT: {
+                turnRight(); //red-right, right tp
+                dropOff(6);
+                turnLeft();
+                drive(20);
+                turnLeft();
+                drive(-24*1.75);
+                break;
+            }
+            default: {
+                dropOff(6); //red-right, center tp
+                turnLeft();
+                drive(-24);
+                turnLeft();
+                drive(-24);
+                turnRight();
+                drive(-20);
+                break;
+            }
+        }
+    }
+
+    //1 for red, 2 for blue
+    public void camInit(int teamColor) {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("webcam", "webcam", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
         FtcDashboard.getInstance().startCameraStream(webcam, 30);
         pipeline = new SamplePipeline();
-        pipeline.setTeamColor(1); // ** 1 for red, 2 for blue **
+        pipeline.setTeamColor(teamColor); // ** 1 for red, 2 for blue **
         webcam.setPipeline(pipeline);
         //webcam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -48,145 +135,108 @@ public class rightRedAuto extends LinearOpMode {
 //                //0 for blue, 1 for red (maybe)
 //                //webcam.setTeamColor(0);
 //                snapshotAnalysis = pipeline.getAnalysis();
-////                webcam.stopStreaming();
-////                webcam.closeCameraDevice();
+//                webcam.stopStreaming();
+//                webcam.closeCameraDevice();
 //                telemetry.addLine("Analysis: "+snapshotAnalysis);
             }
             @Override
             public void onError(int errorCode) {
                 //called if cam cannot be opened
                 snapshotAnalysis = SamplePipeline.PropPosition.CENTER;
-                telemetry.addLine("Analysis: Failed\nError: "+errorCode+"\nDefaulting to Center");
+                telemetry.addLine("Analysis Failed\nError: "+errorCode+"\nDefaulting to Center");
             }
         });
-
-        //cam code done :3
-
-        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
-        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
-        leftSwiper = hardwareMap.get(Servo.class, "leftSwiper");
-//        rightSwiper = hardwareMap.get(Servo.class, "rightSwiper");
-
-        leftDrive.setDirection(DcMotor.Direction.FORWARD); //probably reverse
-        leftSwiper.setDirection(Servo.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        //rightSwiper.setDirection(Servo.Direction.REVERSE);
-
-        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-
-        //replaces waitForStart
-        while (!isStarted() && !isStopRequested())
-        {
-            telemetry.addData("Realtime analysis", pipeline.getAnalysis());
-            telemetry.update();
-
-            // Don't burn CPU cycles busy-looping in this sample
-            sleep(50);
-        }
-        snapshotAnalysis = pipeline.getAnalysis();
-        webcam.stopStreaming();
-        webcam.closeCameraDevice();
-
-//
-        telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
-        telemetry.update();
-        //go forward a bit
-        // also change resolution boxes to fit 720p
-
-        closeSwipers();
-        drive(0.25,20,20);
-        switch (snapshotAnalysis) {
-            case LEFT: {
-                telemetry.addLine("LEFT");
-                turnLeft();
-                dropoff();
-                turnRight();
-                drive(0.25,24,24);
-                turnRight();
-            }
-            case RIGHT: {
-                telemetry.addLine("RIGHT");
-                turnRight();
-                dropoff();
-                turnLeft();
-                drive(0.25,24,24);
-                turnRight();
-            }
-            default: {
-                telemetry.addLine("CENTER");
-                drive(0.25,24,24);
-                turnRight();
-                turnRight();
-                dropoff();
-                turnLeft();
-            }
-        }
-
-        drive(0.25,24*4,24*2);
-
-        requestOpModeStop();
-
-
-
-        // Put initialization blocks here. NO NECESSARY CHANGES ABOVE HERE
-//        while (opModeIsActive()) {
-//            // Put loop blocks here.
-//            telemetry.update();
-//        }
     }
 
-    public void openSwipers() {
-        leftSwiper.setPosition(.7);
-    }
-    public void closeSwipers() {
-        leftSwiper.setPosition(.3);
-    }
+    public void drive(double inches) { // a little off, might need increase
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-    public void dropoff() {
-        drive(0.25,4,4);
-        openSwipers();
-        drive(0.25,-4,-4);
-        closeSwipers();
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        leftDrive.setPower(0.3);
+        rightDrive.setPower(0.3);
+
+        leftDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
+        rightDrive.setTargetPosition((int) (inches*TICKS_PER_INCH));
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while(opModeIsActive() && (leftDrive.isBusy() || rightDrive.isBusy())) {}
     }
 
     public void turnLeft() {
-        drive(0.25,-8,16);
-    }
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftDrive.setPower(0.2);
+        rightDrive.setPower(0.2);
+
+        waitASec(1.4);
+        leftDrive.setPower(0);
+        rightDrive.setPower(0);
+    }
     public void turnRight() {
-        drive(0.25,16,-8);
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftDrive.setPower(0.2);
+        rightDrive.setPower(0.2);
+
+        waitASec(1.4);
+        leftDrive.setPower(0);
+        rightDrive.setPower(0);
     }
 
-    private void drive(double power, double leftInches, double rightInches) { //code stolen from ff has motors in front, could be a prob idk
-        int rightTarget;
-        int leftTarget;
-
-        if (opModeIsActive()) {
-            // Create target positions
-            rightTarget = rightDrive.getCurrentPosition() + (int)(rightInches * DRIVE_COUNTS_PER_IN);
-            leftTarget = leftDrive.getCurrentPosition() + (int)(leftInches * DRIVE_COUNTS_PER_IN);
-
-            // set target position
-            leftDrive.setTargetPosition(leftTarget);
-            rightDrive.setTargetPosition(rightTarget);
-
-            //switch to run to position mode
-            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            //run to position at the desiginated power
-            leftDrive.setPower(power);
-            rightDrive.setPower(power);
-
-            // wait until both motors are no longer busy running to position //this entire part is cringe
-            while (opModeIsActive() && (leftDrive.isBusy() || rightDrive.isBusy())) {
-            }
-
-            // set motor power back to 0
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-        }
+    public void openClaw() {
+        claw.setPosition(.1);
     }
-}
+    public void closeClaw() {
+        claw.setPosition(0);
+    }
+
+    public void dropOff(double inches) {
+        drive(inches);
+        //waitASec(.25);
+        drive(-inches);
+    }
+
+    public void raiseArm() {
+        leftArm.setPower(-.45);
+        rightArm.setPower(-.45);
+        waitASec(.75);
+        leftArm.setPower(-.1);
+        rightArm.setPower(-.1);
+    }
+
+    public void lowerArm() {
+        leftArm.setPower(.2);
+        rightArm.setPower(.2);
+        waitASec(.75);
+        leftArm.setPower(0);
+        rightArm.setPower(0);
+    }
+
+    public void armForward() {
+        motor.setTargetPosition((int) (4.1 * MOTOR_TICKS_PER_INCH));
+        runtime.reset();
+        while(motor.isBusy() && opModeIsActive()) {}
+    }
+
+    public void armBack() {
+        motor.setTargetPosition(0);
+        while(motor.isBusy() && opModeIsActive()) {}
+    }
+
+    public void waitASec(double seconds) {
+        runtime.reset();
+        while(runtime.time()<seconds && opModeIsActive()) {}
+    }}

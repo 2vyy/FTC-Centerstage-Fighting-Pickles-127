@@ -39,7 +39,7 @@ public class autoRewrite extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        camInit(1); // ** 1 for red, 2 for blue **
+        camInit(2); // ** 1 for red, 2 for blue **
 
         motor = hardwareMap.get(DcMotor.class, "hexMotor");
         leftArm = hardwareMap.get(CRServo.class, "left");
@@ -86,75 +86,107 @@ public class autoRewrite extends LinearOpMode {
         telemetry.update();
 
 
-
-//        drive(24); left (no score on backboard //fix this
-//        turnLeft();
-//        dropOff(7);
-//        turnRight();
+//        closeClaw();
+//        //waitASec(.5);
 //        drive(24);
-//        turnRight();
-//        drive(-24*3);
+//        switch(snapshotAnalysis) { //blue-left
+//            case LEFT: {
+//                turnLeft(); //blue-left, left tp
+//                dropOff(4);
+//                turnRight();
+//                drive(18);
+//                turnRight();
+//                drive(-24*1.75);
+//                break;
+//            }
+//            case RIGHT: {
+//                turnRight(); //blue-left, right tp
+//                dropOff(10);
+//                turnLeft();
+//                drive(20);
+//                turnRight();
+//                drive(-24*2);
+//                break;
+//            }
+//            default: {
+//                dropOff(6); // blue-left, center tp
+//                turnRight();
+//                drive(-24);
+//                turnRight();
+//                drive(-24);
+//                turnLeft();
+//                drive(-20);
+//                break;
+//            }
+//        }
+
+//        closeClaw();
+//        //waitASec(.5);
+//        drive(24);
+//        switch(snapshotAnalysis) { //blue-right
+//            case LEFT: {
+//                turnLeft(); //blue right, left tp
+//                dropOff(10);
+//                turnRight();
+//                drive(24);
+//                turnRight();
+//                drive(-24*4);
+//                break;
+//            }
+//            case RIGHT: {
+//                turnRight(); //blue-right, right tp .375
+//                dropOff(6);
+//                turnLeft();
+//                drive(24);
+//                turnRight();
+//                drive(-24*4);
+//                break;
+//            }
+//            default: {
+//                dropOff(6); //blue right, center tp
+//                turnRight();
+//                drive(18);
+//                turnLeft();
+//                drive(24);
+//                turnRight();
+//                drive(-24*4.5);
+//                break;
+//            }
+//        }
 
         closeClaw();
         //waitASec(.5);
         drive(24);
-
-//        turnRight(); blue-left, right tp
-//        dropOff(10);
-//        turnLeft();
-//        drive(20);
-//        turnRight();
-//        drive(-24*2);
-
-//        turnLeft(); blue-left, left tp
-//        dropOff(4);
-//        turnRight();
-//        drive(18);
-//        turnRight();
-//        drive(-24*1.75);
-
-        dropOff(6); // blue-left, center tp
-        turnRight();
-        drive(-24);
-        turnRight();
-        drive(-24);
-        turnLeft();
-        drive(-20);
-
-
-//        turnRight(); blue-right, right tp .375
-//        dropOff(6);
-//        turnLeft();
-//        drive(24);
-//        turnRight();
-//        drive(-24*4);
-
-//        dropOff(6); blue right, center tp
-//        turnRight();
-//        drive(18);
-//        turnLeft();
-//        drive(24);
-//        turnRight();
-//        drive(-24*4.5);
-
-//        turnLeft(); blue right, left tp
-//        dropOff(10);
-//        turnRight();
-//        drive(24);
-//        turnRight();
-//        drive(-24*4);
-
-        //turnLeft();
-//        drive(-24*3);
-//        turnLeft();
-//        drive(6);
-//        turnRight();
-
-//        drive(24); center
-//        dropOff(7);
-//        turnRight();
-//        drive(-24*2.4);
-
+        switch(snapshotAnalysis) { //red-left
+            case LEFT: {
+                turnLeft(); //red left, left tp
+                dropOff(6);
+                turnRight();
+                drive(24);
+                turnLeft();
+                drive(-24*4);
+                break;
+            }
+            case RIGHT: {
+                turnRight(); //red left, right tp .375
+                dropOff(10);
+                turnLeft();
+                drive(24);
+                turnLeft();
+                drive(-24*4);
+                break;
+            }
+            default: {
+                dropOff(6); //red left, center tp
+                turnLeft();
+                drive(18);
+                turnRight();
+                drive(24);
+                turnLeft();
+                drive(-24*4.5);
+                break;
+            }
+        }
     }
 
     //1 for red, 2 for blue
