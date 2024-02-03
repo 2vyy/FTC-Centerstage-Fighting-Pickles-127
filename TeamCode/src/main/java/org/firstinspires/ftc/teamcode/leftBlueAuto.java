@@ -89,7 +89,7 @@ public class leftBlueAuto extends LinearOpMode {
         switch(snapshotAnalysis) { //blue-left
             case LEFT: {
                 turnLeft(); //blue-left, left tp
-                dropOff(6);
+                dropOff(4);
                 turnRight();
                 drive(20);
                 turnRight();
@@ -110,7 +110,7 @@ public class leftBlueAuto extends LinearOpMode {
                 turnRight();
                 drive(-24);
                 turnRight();
-                drive(-24);
+                drive(-20);
                 turnLeft();
                 drive(-20);
                 break;

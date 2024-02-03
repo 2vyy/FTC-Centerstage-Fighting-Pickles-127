@@ -23,6 +23,7 @@ public class TeleOp_Test extends LinearOpMode {
     private CRServo leftArm;
     private CRServo rightArm;
     private Servo claw;
+    private Servo drone;
     private double leftPower;
     private double rightPower;
     private double speedLimit;
@@ -81,6 +82,7 @@ public class TeleOp_Test extends LinearOpMode {
             motorAction();
             armAction();
             clawAction();
+            droneAction();
             driveAction(-gamepad1.left_stick_y, gamepad1.right_stick_x);
 
             //telemetry.addLine(arm1.getPosition()+"");
@@ -99,10 +101,10 @@ public class TeleOp_Test extends LinearOpMode {
         if(gamepad1.right_trigger>0.2) {
             speedLimit = 0.25;
         } else {
-            speedLimit = 1.0;
+            speedLimit = 0.75;
         }
 
-        double denominator = Math.max(Math.abs(drive) + Math.abs(turn), 1);
+        double denominator = Math.max(Math.abs(drive) + Math.abs(turn), 0.75);
         leftPower    = Range.clip(drive + turn, -speedLimit, speedLimit) / denominator ;
         rightPower   = Range.clip(drive - turn, -speedLimit, speedLimit) / denominator ;
 
@@ -137,8 +139,8 @@ public class TeleOp_Test extends LinearOpMode {
             case HOLD: {
                 double leftArmPower = leftArm.getPower();
                 if(leftArmPower!=0 && leftArmPower!=-.1) {
-                    leftArm.setPower(-.1);
-                    rightArm.setPower(-.1);
+                    leftArm.setPower(-.05);
+                    rightArm.setPower(-.05);
                 }
             }
             break;
@@ -174,9 +176,16 @@ public class TeleOp_Test extends LinearOpMode {
 
     public void clawAction() {
         if(gamepad1.a) {
-            claw.setPosition(.1);
+            claw.setPosition(.5);
         } else if (gamepad1.b) {
-            claw.setPosition(0);
+            claw.setPosition(.6);
+        }
+    }
+
+    public void droneAction() {
+        if(gamepad1.start && gamepad1.back) {
+            drone = hardwareMap.get(Servo.class, "drone");
+            drone.setPosition(0);
         }
     }
 }
