@@ -47,6 +47,7 @@ public class TeleOp_Test extends LinearOpMode {
         leftArm = hardwareMap.get(CRServo.class, "left");
         rightArm = hardwareMap.get(CRServo.class, "right");
         claw = hardwareMap.get(Servo.class, "claw");
+        drone = hardwareMap.get(Servo.class, "drone");
 
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
@@ -70,6 +71,8 @@ public class TeleOp_Test extends LinearOpMode {
 
         leftArm.setPower(0);
         rightArm.setPower(0);
+
+        drone.setPosition(.35);
 
         // Wait for the game to start (driver presses PLAY)
         telemetry.addLine("Init");
@@ -146,7 +149,7 @@ public class TeleOp_Test extends LinearOpMode {
             break;
 
             case UP: {
-                if(arm_timer.time()>1) {
+                if(arm_timer.time()>.95) {
                     arm_timer.reset();
                 }
                 leftArm.setPower(-.45);
@@ -155,7 +158,7 @@ public class TeleOp_Test extends LinearOpMode {
             break;
 
             case DOWN: {
-                if(arm_timer.time()>1) {
+                if(arm_timer.time()>.95) {
                     arm_timer.reset();
                 }
                 leftArm.setPower(.2);
@@ -165,7 +168,7 @@ public class TeleOp_Test extends LinearOpMode {
 
         }
 
-        if(arm_timer.time()>.75) {
+        if(arm_timer.time()>.7) {
             if(current_pos == ARM_POS.DOWN) {
                 leftArm.setPower(0);
                 rightArm.setPower(0);
@@ -175,17 +178,17 @@ public class TeleOp_Test extends LinearOpMode {
     }
 
     public void clawAction() {
-        if(gamepad1.a) {
-            claw.setPosition(.5);
-        } else if (gamepad1.b) {
+        if(gamepad1.b) {
+            claw.setPosition(.25);
+        } else if (gamepad1.a) {
             claw.setPosition(.6);
         }
     }
 
     public void droneAction() {
         if(gamepad1.start && gamepad1.back) {
-            drone = hardwareMap.get(Servo.class, "drone");
             drone.setPosition(0);
         }
+
     }
 }

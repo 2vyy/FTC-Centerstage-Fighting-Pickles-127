@@ -89,7 +89,7 @@ public class leftRedAuto extends LinearOpMode {
         switch(snapshotAnalysis) { //red-left
             case LEFT: {
                 turnLeft(); //red left, left tp
-                dropOff(6);
+                dropOff(4);
                 turnRight();
                 drive(26);
                 turnLeft();
@@ -119,13 +119,14 @@ public class leftRedAuto extends LinearOpMode {
                 break;
             }
         }
+        openClaw();
     }
 
     //1 for red, 2 for blue
     public void camInit(int teamColor) {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("webcam", "webcam", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "webcam"), cameraMonitorViewId);
-        FtcDashboard.getInstance().startCameraStream(webcam, 30);
+        //FtcDashboard.getInstance().startCameraStream(webcam, 30);
         pipeline = new SamplePipeline();
         pipeline.setTeamColor(teamColor); // ** 1 for red, 2 for blue **
         webcam.setPipeline(pipeline);
@@ -200,10 +201,10 @@ public class leftRedAuto extends LinearOpMode {
     }
 
     public void openClaw() {
-        claw.setPosition(.1);
+        claw.setPosition(.6);
     }
     public void closeClaw() {
-        claw.setPosition(0);
+        claw.setPosition(.25);
     }
 
     public void dropOff(double inches) {
