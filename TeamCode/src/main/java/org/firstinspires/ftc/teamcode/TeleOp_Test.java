@@ -139,8 +139,8 @@ public class TeleOp_Test extends LinearOpMode {
             case HOLD: {
                 double leftArmPower = leftArm.getPower();
                 if(leftArmPower!=0 && leftArmPower!=-.1) {
-                    leftArm.setPower(-.05);
-                    rightArm.setPower(-.05);
+                    leftArm.setPower(-.075);
+                    rightArm.setPower(-.075);
                 }
             }
             break;
